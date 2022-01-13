@@ -28,6 +28,9 @@
 void CreateWorld(int cave[ArraySize][ArraySize]);
 int *GetEmptyRoom(int cave[ArraySize][ArraySize]);
 void DisplayWorld(int cave[ArraySize][ArraySize], int *agent, int agentDir);
+int DifferenceByDirection(int dir);
+bool DisplayStatus(int *agent);
+void OpenFire(int* agent, int dir);
  
 int main()
 {
@@ -42,12 +45,14 @@ int main()
 
     CreateWorld(cave);
     agentDirection = rand() % 4;
-
     agentRoom = GetEmptyRoom(cave);
+    int d;
     
     /* The game loop */
     while(true)
     {
+        if(DisplayStatus(agentRoom))
+            break;
         DisplayWorld(cave, agentRoom, agentDirection);
 
         /* Get the command */
@@ -60,12 +65,20 @@ int main()
         }
         else if(strcmp(command, "move") == 0)
         {
+            d = DifferenceByDirection(agentDirection);
+
+            if(*(agentRoom+d)!=End)
+                agentRoom+=d;
         }
         else if(strcmp(command, "turn") == 0)
         {
+            agentDirection++;
+            if(agentDirection > Down)
+                agentDirection=Left;
         }
         else if(strcmp(command, "fire") == 0)
         {
+            OpenFire(agentRoom, agentDirection);
         }
         else
         {
@@ -90,10 +103,14 @@ void CreateWorld(int cave[ArraySize][ArraySize]){
             {
                 cave[i][j] = Empty;
             }       
-        }
-        
+        }        
     }
-    
+    int* room = GetEmptyRoom(cave);
+    *room = Wumpus;
+    for(i=0;i<10;i++){
+        room = GetEmptyRoom(cave);
+        *room = Pit;
+    }
 }
 
 int *GetEmptyRoom(int cave[ArraySize][ArraySize])
@@ -178,7 +195,9 @@ void DisplayWorld(int cave[ArraySize][ArraySize], int *agent, int agentDir)
             case Wumpus:
                 printf("-W- ");
                 break;
-                
+            case Pit:
+                printf("-P- ");
+                break;
             default:
                 printf(" .  ");
                 break;    
@@ -187,6 +206,73 @@ void DisplayWorld(int cave[ArraySize][ArraySize], int *agent, int agentDir)
         }
 
         printf("\n");
+    }
+    
+}
+
+int DifferenceByDirection(int dir){
+    switch(dir)
+    {
+    case Up:
+        return -ArraySize;
+        
+    case Down:
+        return ArraySize;
+        
+    case Left:
+        return -1;
+        
+    case Right:
+        return 1;
+    }
+}
+
+bool DisplayStatus(int *agent){
+    if(*(agent-1)==Wumpus||*(agent+1)==Wumpus||*(agent-ArraySize)==Wumpus||*(agent+ArraySize)==Wumpus)
+        printf("I smell a Wumpus.");
+    if(*(agent-1)==Pit||*(agent+1)==Pit||*(agent-ArraySize)==Pit||*(agent+ArraySize)==Pit)
+        printf("I felt a draft.");
+    if(*agent == Wumpus){
+        printf("You have been eaten by the Wumpus\n");
+        return true;
+    }else if(*agent == Pit){
+        printf("You feel a draft.");
+        return true;
+    }
+    if(*(agent+1) == End || *(agent-1) == End||*(agent-ArraySize)==End||*(agent+ArraySize)==End){
+        printf("You have arrived at the end! You got win!");
+        return true;
+    }
+    return false;
+}
+
+void OpenFire(int* agent, int dir){
+    int i = 1;
+    if (dir==Right)
+    {
+        while(*(agent+i)!=End&&i<=3){
+            if(*(agent+i)==Wumpus)
+                *(agent+i)=Empty;
+            i++;
+        }
+    }else if(dir==Left){
+        while(*(agent-i)!=End&&i<=3){
+            if(*(agent-i)==Wumpus)
+                *(agent-i)=Empty;
+            i++;
+        }
+    }else if(dir==Up){
+        while(*(agent+ArraySize)!=Empty&&i<=3){
+            if(*(agent+i*ArraySize)==Wumpus)
+                *(agent+i*ArraySize)=Empty;
+            i++;
+        }
+    }else{
+        while(*(agent-ArraySize)!=Empty&&i<=3){
+            if(*(agent-i*ArraySize)==Wumpus)
+                *(agent-i*ArraySize)=Empty;
+            i++;
+        }
     }
     
 }
