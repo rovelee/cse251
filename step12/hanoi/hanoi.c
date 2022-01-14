@@ -43,7 +43,8 @@ int main()
         to = InputPin("Pin to move to: ", 1, 3);
 
         /* Perform the move the user asked */
-        MoveDisk(tower, fm, to);
+        if(fm!=to)
+            MoveDisk(tower, fm, to);
 
     } while(!CheckDone(tower));
 
