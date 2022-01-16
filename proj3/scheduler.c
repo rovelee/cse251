@@ -13,7 +13,8 @@ int main(int argc, char const *argv[])
   p_head = (Node*)malloc(sizeof(Node));
   //加载文件中的内容
   p_tail = loadf(p_head, &nums);
-  // printf("%p\n%p",p_head,p_tail);
+  // p_tail->next = NULL;
+  // printf("head: %p\ntail: %p",p_head,p_tail);
   // printf("%d\n",nums);
 
   while (1)
@@ -33,7 +34,9 @@ int main(int argc, char const *argv[])
     }
     else if (c=='1')
     {
-      insert(p_tail);
+      p_tail = insert(p_tail);
+      nums++;
+      // printf("tail : %p tail.next : %p\n",p_tail,p_tail->next);
     }
     else if (c=='2')
     {
@@ -51,7 +54,8 @@ int main(int argc, char const *argv[])
     {
       puts("Please type right command!\n");
     }
-    
+    if(feof(stdin))
+      return 0;
   }
 
   return 0;
