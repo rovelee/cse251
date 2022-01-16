@@ -106,6 +106,10 @@ int printfScheduler(Scheduler* sched){
 }
 
 int display(Node* h, int nums){
+  if(nums<=0){
+    printf("No scheduler now!\n");
+    return 0;
+  }
   Node* p = h;
   // printf("nums:%d\n",nums);
   while(nums>0){
@@ -185,23 +189,17 @@ time_t insertTime(time_t date, char* prompt){
     return mktime(&time);
 }
 
-Node* insert(Node* tail){
-  // printf("insert tail : %p\n",tail);
-  Node* a = (Node*)malloc(sizeof(Node));
-  tail->next=a;
-  a->next=NULL;
-  tail=tail->next;
-  if(tail==NULL)
-  {
-    printf("tail is null\n");
-    exit(0);
-  }
-  insertDes(tail->scheduler.description);
-  insertDate(&(tail->scheduler.date));
-  tail->scheduler.start = insertTime(tail->scheduler.date, "Start time: ");
-  tail->scheduler.end =insertTime(tail->scheduler.date, "End time: ");
-  return a;
+Node* insert(Node* p){
+  // printf("insert p : %p\n",p);
+  p = (Node*)malloc(sizeof(Node));
+  p->next = NULL;
+  insertDes(p->scheduler.description);
+  insertDate(&(p->scheduler.date));
+  p->scheduler.start = insertTime(p->scheduler.date, "Start time: ");
+  p->scheduler.end =insertTime(p->scheduler.date, "End time: ");
+  return p;
 }
+
 int now(Node* head){
   if(head==NULL)
     return 0;
@@ -222,8 +220,81 @@ int now(Node* head){
     printf("no active events.\n");
   return 1;
 }
-int deleteExpired(Node* head){
-  // TODO
+int deleteExpired(Node** head){
+  struct tm tim = *localtime(&(time_t){time(NULL)});
+  time_t tnow = mktime(&tim);
+  int deln = 0;
+  //处理头指针
+  while(*head!=NULL&&(*head)->scheduler.end<tnow)
+  {
+    printfScheduler(&((*head)->scheduler));
+    *head = (*head)->next;
+    deln++;
+  }
+  
+  if((*head)==NULL)
+    return deln;
+  
+  Node* p, * pre;
+  pre = (*head);
+  p = pre->next;
+  //处理后续指针
+  while (p!=NULL)
+  {
+    if(p->scheduler.end<tnow){
+      printfScheduler(&(p->scheduler));
+      pre->next = p->next;
+      p = p->next;
+      deln++;
+    }else{
+      pre = p;
+      p = p->next;
+    }
+  }
+  return deln;
+}
+
+int check(Node* head, Scheduler in){
+  Node *p = head;
+  time_t start, end;
+  start = in.start;
+  end = in.end;
+  while (p->next!=NULL)
+  {
+    if(start>=p->scheduler.start&&start<=p->scheduler.end){
+      printf("Befor this start was having a exist scheduler.\n");
+      return 0;
+    }
+    if(end<=p->scheduler.start&&end<=p->scheduler.end){
+      printf("After this end was having a exist scheduler.\n");
+      return 0;
+    }
+    p = p->next;
+  }
   return 1;
 }
 
+int savef(Node* head, int nums){
+  FILE *file;
+  if((file=fopen(FileName, "w"))==NULL){
+    puts("fopen error\n");
+    exit(0);
+  }
+  fprintf(file, "%d\n", nums);
+  Node *p = head;
+  while(p!=NULL&&nums>0){
+    char buffer[100];
+    struct tm tim;
+    fprintf(file,"%s\n",p->scheduler.description);
+    tim = *localtime(&(p->scheduler.start));
+    strftime(buffer, sizeof(buffer), "%a %b %d %H:%M:%S %Y", &tim);
+    fprintf(file,"%s\n",buffer);
+    tim = *localtime(&(p->scheduler.end));
+    strftime(buffer, sizeof(buffer), "%a %b %d %H:%M:%S %Y", &tim);
+    fprintf(file,"%s\n",buffer);
+    nums--;
+    p=p->next;
+  }
+  fclose(file);
+  return 1;
+}

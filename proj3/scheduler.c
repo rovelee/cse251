@@ -34,8 +34,13 @@ int main(int argc, char const *argv[])
     }
     else if (c=='1')
     {
-      p_tail = insert(p_tail);
-      nums++;
+      Node *p;
+      p = insert(p);
+      if(check(p_head, p->scheduler)){
+        nums++;
+        p_tail->next = p;
+        p_tail=p_tail->next;
+      }
       // printf("tail : %p tail.next : %p\n",p_tail,p_tail->next);
     }
     else if (c=='2')
@@ -48,7 +53,10 @@ int main(int argc, char const *argv[])
     }
     else if (c=='4')
     {
-      deleteExpired(p_head);
+      // printf("before del: %p\n", p_head);
+      nums -= deleteExpired(&p_head);
+      // printf("%d\n",nums);
+      // printf("after del : %p\n", p_head);
     }
     else
     {
@@ -57,6 +65,6 @@ int main(int argc, char const *argv[])
     if(feof(stdin))
       return 0;
   }
-
+  savef(p_head, nums);
   return 0;
 }

@@ -17,11 +17,12 @@ typedef struct Node{
 }Node;
 
 Node* loadf(Node* head, int* nums);
-int savef(Node* head);
-Node* insert(Node* tail);
+int savef(Node* head, int nums);
+Node* insert(Node* p);
 int display(Node* head, int nums);
 int now(Node* head);
-int deleteExpired(Node* head);
+int deleteExpired(Node** head);
+int check(Node* head, Scheduler in);
 
 
 #endif
